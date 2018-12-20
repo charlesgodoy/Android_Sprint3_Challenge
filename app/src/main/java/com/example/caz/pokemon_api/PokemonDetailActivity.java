@@ -1,11 +1,18 @@
 package com.example.caz.pokemon_api;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 
 public class PokemonDetailActivity extends AppCompatActivity implements PokemonDetailResponse{
 
@@ -15,6 +22,8 @@ public class PokemonDetailActivity extends AppCompatActivity implements PokemonD
     TextView tvTypes;
     Pokemon loadedPokemon;
     ImageView ivPokemonImage;
+
+    Bitmap bitmap;
 
 
     @Override
@@ -50,20 +59,50 @@ public class PokemonDetailActivity extends AppCompatActivity implements PokemonD
         // get the pokemon here
         if(pokemon!=null){
             this.loadedPokemon = pokemon;
-
-
-            int loader = R.drawable.loader;             // added loader image in drawable folder
-
             String imageUrl = loadedPokemon.getSpriteUrl();
 
-            ImageLoader imgLoader = new ImageLoader(getApplicationContext());
-            Log.d("ShowUrl", imageUrl);
-            imgLoader.DisplayImage(imageUrl, loader, ivPokemonImage);
 
-//            Picasso.get().load(this.loadedPokemon.getSpriteUrl()).into(ivPokemonImage);
-
+            new GetImageFromUrl().execute(imageUrl);
+//// ----------------------------------
+//            int loader = R.drawable.loader;             // added loader image in drawable folder
+//
+//            String imageUrl = loadedPokemon.getSpriteUrl();
+//
+//            ImageLoader imgLoader = new ImageLoader(getApplicationContext());
+//            Log.d("ShowUrl", imageUrl);
+//            imgLoader.DisplayImage(imageUrl, loader, ivPokemonImage);
+//// ----------------------------------
+////            Picasso.get().load(this.loadedPokemon.getSpriteUrl()).into(ivPokemonImage);
+//// ----------------------------------
             tvAbilities.setText("Abilities: " + loadedPokemon.getAbilities());
             tvTypes.setText("Types: " + loadedPokemon.getTypes());
         }
     }
+
+
+    public class GetImageFromUrl extends AsyncTask<String, Void, Bitmap> {
+
+
+        @Override
+        protected Bitmap doInBackground(String... strings) {
+
+            String urlDisplay = strings[0];
+            bitmap = null;
+            try {
+                InputStream inputStream = new URL(urlDisplay).openStream();
+                bitmap = BitmapFactory.decodeStream(inputStream);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            return bitmap;
+        }
+
+        @Override
+        protected void onPostExecute(Bitmap bitmap) {
+            super.onPostExecute(bitmap);
+            ivPokemonImage.setImageBitmap(bitmap);
+        }
+    }
+
 }
